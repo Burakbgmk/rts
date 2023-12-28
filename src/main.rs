@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 struct Task {
     id: usize,
     duration: usize,
@@ -34,9 +34,9 @@ fn main() {
         turn_count: 0,
     };
 
-    let mut arr = vec![&mut first, &mut second, &mut third, &mut fourth];
+    let arr = vec![&mut first, &mut second, &mut third, &mut fourth];
     // rate_monotonic(&mut arr);
-    earliest_deadline(&mut arr)
+    earliest_deadline(arr)
 
     // calc_lcm(&mut nums);
 }
@@ -53,7 +53,7 @@ fn main() {
 //     }
 // }
 
-fn earliest_deadline(arr: &mut Vec<&mut Task>) {
+fn earliest_deadline(mut arr: Vec<&mut Task>) {
     println!("Earliest Deadline.....");
     let mut periods: Vec<usize> = arr.iter().map(|x| x.period).collect();
     let lcm = calc_lcm(&mut periods).pop().unwrap();
@@ -61,19 +61,40 @@ fn earliest_deadline(arr: &mut Vec<&mut Task>) {
     arr.sort_by_key(|x| x.period);
     println!("sorted array : {:?}", arr);
     let mut current_time = 0;
-    let mut task_index = 0;
-    // println!("{:?}", arr[0]);
+    let mut current_count = 0;
     while current_time <= lcm {
-        if task_index == arr.len() {
-            task_index = 0;
+        let mut task_index = 0;
+        let current_task_index = arr
+            .iter()
+            .position(|x| x.turn_count == current_count && current_time >= x.period * x.turn_count);
+        task_index = current_task_index.unwrap_or_default();
+        if current_task_index == None {
+            let mut is_legit = false;
+            while task_index < arr.len() {
+                // println!(
+                //     "task index : {}, current count : {}, current time {}",
+                //     task_index, current_count, current_time
+                // );
+                if current_time >= arr[task_index].period * arr[task_index].turn_count {
+                    is_legit = true;
+                    // println!("legittt!");
+                    break;
+                }
+                task_index += 1;
+            }
+            if !is_legit {
+                // println!("isnt legit!");
+                current_time += 1;
+                continue;
+            }
         }
         let current_task = &mut arr[task_index];
+        // println!("Turn is for {:?}", current_task);
         if current_time + current_task.duration > lcm {
+            println!("duration: {}", current_task.duration);
+            println!("end at {}", current_time);
+            println!("Breaks due to duration exceeds max limit");
             break;
-        }
-        if current_time < current_task.period * current_task.turn_count {
-            current_time += 1;
-            continue;
         }
         current_task.turn_count += 1;
         println!(
@@ -84,7 +105,14 @@ fn earliest_deadline(arr: &mut Vec<&mut Task>) {
             current_task.turn_count
         );
         current_time += current_task.duration;
-        task_index += 1;
+        println!("end at {}", current_time);
+        if !arr.iter().any(|x| x.turn_count == current_count) {
+            current_count += 1;
+            println!(
+                "Count increased to {} at time {}",
+                current_count, current_time
+            );
+        }
     }
     println!("Finished....");
 }
