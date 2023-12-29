@@ -7,76 +7,87 @@ struct Task {
 }
 
 fn main() {
-    println!("Algoritm Starts!!");
+    let mut test1 = vec![
+        Task {
+            id: 1,
+            duration: 1,
+            period: 4,
+            turn_count: 0,
+        },
+        Task {
+            id: 2,
+            duration: 2,
+            period: 5,
+            turn_count: 0,
+        },
+        Task {
+            id: 3,
+            duration: 5,
+            period: 20,
+            turn_count: 0,
+        },
+    ];
 
-    let mut first = Task {
-        id: 1,
-        duration: 2,
-        period: 10,
-        turn_count: 0,
-    };
-    let mut second = Task {
-        id: 2,
-        duration: 3,
-        period: 15,
-        turn_count: 0,
-    };
-    let mut third = Task {
-        id: 3,
-        duration: 3,
-        period: 10,
-        turn_count: 0,
-    };
-    let mut fourth = Task {
-        id: 4,
-        duration: 4,
-        period: 30,
-        turn_count: 0,
-    };
+    let mut test2 = vec![
+        Task {
+            id: 1,
+            duration: 2,
+            period: 5,
+            turn_count: 0,
+        },
+        Task {
+            id: 2,
+            duration: 4,
+            period: 7,
+            turn_count: 0,
+        },
+    ];
 
-    let mut arr = vec![&mut first, &mut second, &mut third, &mut fourth];
-    arr.sort_by_key(|x| x.period);
-    // rate_monotonic(&mut arr);
-    execute_algoritm("Earliest Deadline", &mut arr);
+    let mut test3 = vec![
+        Task {
+            id: 1,
+            duration: 2,
+            period: 4,
+            turn_count: 0,
+        },
+        Task {
+            id: 2,
+            duration: 3,
+            period: 8,
+            turn_count: 0,
+        },
+        Task {
+            id: 3,
+            duration: 2,
+            period: 16,
+            turn_count: 0,
+        },
+    ];
 
-    let mut first = Task {
-        id: 1,
-        duration: 2,
-        period: 10,
-        turn_count: 0,
-    };
-    let mut second = Task {
-        id: 2,
-        duration: 3,
-        period: 15,
-        turn_count: 0,
-    };
-    let mut third = Task {
-        id: 3,
-        duration: 3,
-        period: 10,
-        turn_count: 0,
-    };
-    let mut fourth = Task {
-        id: 4,
-        duration: 4,
-        period: 30,
-        turn_count: 0,
-    };
+    println!("For Test 1.....");
+    test1.sort_by_key(|x| x.duration);
+    execute_algoritm("Rate Monotonic", &mut test1.clone());
+    test1.sort_by_key(|x| x.period);
+    execute_algoritm("Earliest Deadline", &mut test1);
 
-    arr = vec![&mut first, &mut second, &mut third, &mut fourth];
-    arr.sort_by_key(|x| x.duration);
+    println!("For Test 2.....");
+    test2.sort_by_key(|x| x.duration);
+    execute_algoritm("Rate Monotonic", &mut test2.clone());
+    test2.sort_by_key(|x| x.period);
+    execute_algoritm("Earliest Deadline", &mut test2);
 
-    execute_algoritm("Rate monotonic", &mut arr);
+    println!("For Test 3.....");
+    test3.sort_by_key(|x| x.duration);
+    execute_algoritm("Rate Monotonic", &mut test3.clone());
+    test3.sort_by_key(|x| x.period);
+    execute_algoritm("Earliest Deadline", &mut test3);
 }
 
-fn execute_algoritm(algoritm_name: &str, arr: &mut Vec<&mut Task>) {
+fn execute_algoritm(algoritm_name: &str, arr: &mut Vec<Task>) {
     println!("{}....", algoritm_name);
     let mut periods: Vec<usize> = arr.iter().map(|x| x.period).collect();
     let lcm = calc_lcm(&mut periods).pop().unwrap();
-    println!("lcm : {}", lcm);
     arr.sort_by_key(|x| x.period);
-    println!("sorted array : {:?}", arr);
     let mut current_time = 0;
     let mut current_count = 0;
     while current_time <= lcm {
@@ -100,11 +111,7 @@ fn execute_algoritm(algoritm_name: &str, arr: &mut Vec<&mut Task>) {
             }
         }
         let current_task = &mut arr[task_index];
-        // println!("Turn is for {:?}", current_task);
         if current_time + current_task.duration > lcm {
-            println!("duration: {}", current_task.duration);
-            println!("end at {}", current_time);
-            println!("Breaks due to duration exceeds max limit");
             break;
         }
         current_task.turn_count += 1;
@@ -116,13 +123,13 @@ fn execute_algoritm(algoritm_name: &str, arr: &mut Vec<&mut Task>) {
             current_task.turn_count
         );
         current_time += current_task.duration;
-        println!("end at {}", current_time);
+        // println!("end at {}", current_time);
         if !arr.iter().any(|x| x.turn_count == current_count) {
             current_count += 1;
-            println!(
-                "Count increased to {} at time {}",
-                current_count, current_time
-            );
+            // println!(
+            //     "Count increased to {} at time {}",
+            //     current_count, current_time
+            // );
         }
     }
     println!("Finished....");
