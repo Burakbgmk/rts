@@ -64,6 +64,65 @@ fn main() {
         },
     ];
 
+    let mut test4 = vec![
+        Task {
+            id: 1,
+            duration: 3,
+            period: 5,
+            turn_count: 0,
+        },
+        Task {
+            id: 2,
+            duration: 2,
+            period: 9,
+            turn_count: 0,
+        },
+        Task {
+            id: 3,
+            duration: 6,
+            period: 18,
+            turn_count: 0,
+        },
+        Task {
+            id: 4,
+            duration: 3,
+            period: 30,
+            turn_count: 0,
+        },
+    ];
+
+    let mut test5 = vec![
+        Task {
+            id: 1,
+            duration: 3,
+            period: 4,
+            turn_count: 0,
+        },
+        Task {
+            id: 2,
+            duration: 5,
+            period: 6,
+            turn_count: 0,
+        },
+        Task {
+            id: 3,
+            duration: 9,
+            period: 10,
+            turn_count: 0,
+        },
+        Task {
+            id: 4,
+            duration: 8,
+            period: 30,
+            turn_count: 0,
+        },
+        Task {
+            id: 5,
+            duration: 7,
+            period: 15,
+            turn_count: 0,
+        },
+    ];
     println!("For Test 1.....");
     test1.sort_by_key(|x| x.duration);
     execute_algoritm("Rate Monotonic", &mut test1.clone());
@@ -81,9 +140,36 @@ fn main() {
     execute_algoritm("Rate Monotonic", &mut test3.clone());
     test3.sort_by_key(|x| x.period);
     execute_algoritm("Earliest Deadline", &mut test3);
+
+    println!("For Test 4.....");
+    test4.sort_by_key(|x| x.duration);
+    execute_algoritm("Rate Monotonic", &mut test4.clone());
+    test4.sort_by_key(|x| x.period);
+    execute_algoritm("Earliest Deadline", &mut test4);
+
+    println!("For Test 5.....");
+    test5.sort_by_key(|x| x.duration);
+    execute_algoritm("Rate Monotonic", &mut test5.clone());
+    test5.sort_by_key(|x| x.period);
+    execute_algoritm("Earliest Deadline", &mut test5);
 }
 
 fn execute_algoritm(algoritm_name: &str, arr: &mut Vec<Task>) {
+    if algoritm_name.eq("Rate Monotonic") {
+        let n = arr.len() as i64;
+        let u = n * (2 ^ (1 / n) - 1);
+        if u >= 1 {
+            println!("This algoritm is not feasible");
+            return;
+        }
+    } else {
+        let mut u: usize = 0;
+        arr.iter().for_each(|x| u += x.duration / x.period);
+        if u >= 1 {
+            println!("This algoritm is not feasible");
+            return;
+        }
+    }
     println!("{}....", algoritm_name);
     let mut periods: Vec<usize> = arr.iter().map(|x| x.period).collect();
     let lcm = calc_lcm(&mut periods).pop().unwrap();
@@ -123,13 +209,8 @@ fn execute_algoritm(algoritm_name: &str, arr: &mut Vec<Task>) {
             current_task.turn_count
         );
         current_time += current_task.duration;
-        // println!("end at {}", current_time);
         if !arr.iter().any(|x| x.turn_count == current_count) {
             current_count += 1;
-            // println!(
-            //     "Count increased to {} at time {}",
-            //     current_count, current_time
-            // );
         }
     }
     println!("Finished....");
@@ -139,18 +220,14 @@ fn calc_lcm(nums: &mut Vec<usize>) -> &mut Vec<usize> {
     let max = usize::MAX;
     nums.sort();
     let greatest = nums.pop().unwrap();
-    // println!("{}", greatest);
     nums.reverse();
     let smallest = nums.pop().unwrap();
-    // println!("{}", smallest);
     for i in greatest..max {
-        // println!("i : {}", i);
         if i % smallest == 0 && i % greatest == 0 {
             nums.push(i);
             break;
         }
     }
-    // println!("{:?}", nums);
     if nums.len() > 1 {
         calc_lcm(nums);
     }
